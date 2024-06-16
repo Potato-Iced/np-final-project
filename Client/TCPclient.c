@@ -1,5 +1,8 @@
 #include <winsock2.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
 #define	BUF_SIZE	512
 
 void ErrorDisplay( char *str )
@@ -27,10 +30,9 @@ int recvn( SOCKET s, char *buf, int len, int flags )
 	return (len - left);
 }
 
-
 int main( int argc, char* argv[] )
 {
-int		retval;	
+	int		retval, x, y;
 
 	WSADATA	wsa;
 	retval = WSAStartup(  MAKEWORD(2, 2), &wsa );
@@ -48,6 +50,12 @@ int		retval;
 	ServerAddr.sin_port			= htons(9000);
 	ServerAddr.sin_addr.s_addr	= inet_addr("127.0.0.1");
 	
+	// 난수 생성
+	srand(time(NULL));
+	x = rand();
+	y = rand();
+
+
 	retval = connect(ClientSocket, (SOCKADDR *)&ServerAddr, sizeof(ServerAddr));
 	if(retval == SOCKET_ERROR) {
 		ErrorDisplay("connect() error(SOCKET_ERROR)");
