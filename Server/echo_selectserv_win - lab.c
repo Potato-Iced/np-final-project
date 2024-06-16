@@ -45,7 +45,7 @@ int main(void)
 		fdNum = select(0, &cpyReads, 0, 0, &timeout );
 		if (fdNum == SOCKET_ERROR) {
 			closesocket(hClntSock);
-			break;
+			break; 
 		}
 		else if (fdNum == 0) {
 			continue;
