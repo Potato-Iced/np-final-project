@@ -24,7 +24,7 @@ int main(void)
 	SOCKADDR_IN		servAdr, clntAdr, clientaddr;
 	int				adrSz;
 	int				strLen, fdNum, i;
-	char			buf[BUF_SIZE], datacnt;
+	unsigned char	buf[BUF_SIZE], datacnt;
 //	char*			split;	// buf를 공백 기준으로 파싱해서 구분, strtok() 사용 -> 문자열 다루기가 힘들어서 삭제
 	int				addrlen;
 
@@ -102,7 +102,7 @@ int main(void)
 							
 							// 드론 정보 구조체에 저장
 							// 명령어 종류 상관 없이 x좌표의 인덱스는 [1], y좌표 인덱스는 [1 + 1*sizeof(int)] 고정
-							printf("%%%  현재 for문 i : %d  %%%\n", i);
+							//printf("%%%  현재 for문 i : %d  %%%\n", i);	// debug
 							droneList[i].x = buf[1];
 							droneList[i].y = buf[1 + 1 * sizeof(int)];
 							droneList[i].port = clientaddr.sin_port;
