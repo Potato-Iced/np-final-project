@@ -98,7 +98,7 @@ int main(void)
 							//buf[strLen] = '\0';
 							printf("server> 드론 %d 로부터 메세지 수신 (%d Bytes)\n",
 								clientaddr.sin_port, strLen);
-							send(reads.fd_array[i], buf, strLen + 1, 0);    // echo!
+							send(reads.fd_array[i], buf, strLen, 0);    // echo!
 							
 							// 드론 정보 구조체에 저장
 							// 명령어 종류 상관 없이 x좌표의 인덱스는 [1], y좌표 인덱스는 [1 + 1*sizeof(int)] 고정
@@ -111,7 +111,7 @@ int main(void)
 							printf("[드론 %d]\n", droneList[i].port);
 							printf("$\tcnt : %d\n", datacnt);
 							printf("$\t현재 좌표 <%d, %d>\n", droneList[i].x, droneList[i].y);
-							printf("$\tcommand : %c\n\n\n", buf[1 + 2 * sizeof(int)]);
+							printf("$\tcommand : %c\n\n\n", buf[1 + (int)datacnt * sizeof(int)]);
 
 							
 						}

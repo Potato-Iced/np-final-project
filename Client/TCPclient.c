@@ -119,7 +119,7 @@ int main( int argc, char* argv[] )
 		printf("[TCP 클라이언트] 성공적으로 메세지를 보냈습니다. (%d Bytes)\n", retval);
 
 		// 여기부터 그 targetLen - recvLen 이거 해야할듯
-		// 자꾸 recv하면서 버퍼 읽는거 깨지는데
+		// 자꾸 recv하면서 버퍼 읽는거 깨지는데 -> 서버 측 send()에서 전송 바이트 조정, 해결됨
 		retval = recvn( ClientSocket, Buf, retval, 0 );
 		if(retval == SOCKET_ERROR) {
 			printf("<ERROR> recvn()(SOCKET_ERROR)!!!\n");
@@ -132,7 +132,7 @@ int main( int argc, char* argv[] )
 		printf("ㅡㅡㅡㅡㅡ[수신한 메세지 내용]ㅡㅡㅡㅡㅡ\n");
 		printf("$\tcnt : %d\n", datacnt);
 		printf("$\t현재 좌표 <%d, %d>\n", Buf[1], Buf[1 + 1 * sizeof(int)]);
-		printf("$\tcommand : %c\n", Buf[1 + datacnt * sizeof(int)]);
+		printf("$\tcommand : %c\n", Buf[1 + (int)datacnt * sizeof(int)]);
 		printf("ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ\n\n\n");
 
 		
