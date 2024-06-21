@@ -120,7 +120,7 @@ int main( int argc, char* argv[] )
 
 		// 여기부터 그 targetLen - recvLen 이거 해야할듯
 		// 자꾸 recv하면서 버퍼 읽는거 깨지는데 -> 서버 측 send()에서 전송 바이트 조정, 해결됨
-		// 버퍼 자료형 unsigned char 쓰니까 해결
+		// 버퍼 자료형 unsigned char 사용해서 해결
 		retval = recvn( ClientSocket, Buf, retval, 0 );
 		if(retval == SOCKET_ERROR) {
 			printf("<ERROR> recvn()(SOCKET_ERROR)!!!\n");
@@ -138,7 +138,7 @@ int main( int argc, char* argv[] )
 
 		
 
-		Sleep(5000); // 반복 주기
+		Sleep(3000); // 반복 주기
 	}
 	
 	closesocket( ClientSocket );
