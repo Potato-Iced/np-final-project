@@ -39,6 +39,7 @@ int main( int argc, char* argv[] )
 {
 	int		retval, x, y;
 	int		rcvLen, targetLen;
+	char	datacnt;
 	WSADATA	wsa;
 	retval = WSAStartup(  MAKEWORD(2, 2), &wsa );
 	if(retval != 0)	return -1;
@@ -58,7 +59,7 @@ int main( int argc, char* argv[] )
 	// 0 ~ 200 난수 생성
 	srand(time(NULL));
 	x = rand() % 201;
-	y = rand() % 201;
+	y = rand() % 181 + 20;
 
 
 	retval = connect(ClientSocket, (SOCKADDR *)&ServerAddr, sizeof(ServerAddr));
@@ -66,7 +67,7 @@ int main( int argc, char* argv[] )
 		ErrorDisplay("connect() error(SOCKET_ERROR)");
 	}
 
-	char		Buf[BUF_SIZE+1], itemp[16] = {0,};
+	unsigned char	Buf[BUF_SIZE+1], itemp[16] = {0,};
 	//char*		cPtr;
 	//int		iLen;
 	ZeroMemory(Buf, sizeof(Buf));
@@ -77,22 +78,21 @@ int main( int argc, char* argv[] )
 	// 첫 글자에 개수
 	Buf[0] = (char)2;
 	// 나머지는 x, y 대입
-	*(int*)(Buf + 1) = x;
-	*(int*)(Buf + (1 + sizeof(int))) = y;
+	Buf[1] = x;
+	Buf[1 + 1 * sizeof(int)] = y;
 	// 마지막에 명령어 종류, 최초 초기화이므로 a
-	*(int*)(Buf + 1 + A_LEN * sizeof(int)) = 'a';
+	Buf[1 + 2 * sizeof(int)] = 'a';
 
 	retval = send(ClientSocket, Buf, 2 * sizeof(int) + 3, 0);
 	if (retval == SOCKET_ERROR) {
 		printf("<ERROR> send(%s) falied.\n", Buf);
 	}
 
-	printf("[TCP 클라이언트] 성공적으로 메세지를 보냈습니다. (%dB)\n", retval);
-	printf("cnt : %d\n", (int)Buf[0]);
-	for (int i = 0; i < A_LEN; i++) {
-		printf("좌표%d : %d\n", i + 1, *(int*)(Buf + (1 + i * sizeof(int))));
-	}
-	printf("command : %c\n", Buf[2 * sizeof(int) + 1]);
+	printf("[TCP 클라이언트] 성공적으로 메세지를 보냈습니다. (%d Bytes)\n", retval);
+	printf("보낸 메세지:\n");
+	printf("$\tcnt : %d\n", Buf[0]);
+	printf("$\t현재 좌표 <%d, %d>\n", Buf[1], Buf[1 + 1 * sizeof(int)] = (char)y);
+	printf("$\tcommand : %c\n", Buf[1 + 2 * sizeof(int)]);
 
 
 
@@ -105,30 +105,40 @@ int main( int argc, char* argv[] )
 		// 첫 글자에 개수
 		Buf[0] = (char)2;
 		// 나머지는 x, y 대입
-		*(int*)(Buf + 1) = x;
-		*(int*)(Buf + (1 + sizeof(int))) = y;
-		// 마지막에 명령어 종류, 최초 초기화이므로 a
-		*(int*)(Buf + 1 + A_LEN * sizeof(int)) = 'r';
+		Buf[1] = x;
+		Buf[1 + 1 * sizeof(int)] = y;
+		// 마지막에 명령어 종류, 이제부터는 반복문으로 좌표 계속 갱신이므로 r(refresh)
+		Buf[1 + 2 * sizeof(int)] = 'r';
 		
-		retval = send(ClientSocket, Buf, strlen(Buf), 0);
+		
+		retval = send(ClientSocket, Buf, 2 * sizeof(int) + 3, 0);
 		if(retval == SOCKET_ERROR) {
 			printf("<ERROR> send()(SOCKET_ERROR)!!!\n");
 			break;
 		}
-		printf("[TCP 클라이언트] %d 바이트를 보냈습니다.\n", retval);
+		printf("[TCP 클라이언트] 성공적으로 메세지를 보냈습니다. (%d Bytes)\n", retval);
 
-		// 원래 서버는 에코로 다시 전송, 기존에 보낸 바이트 수와 받아야 하는 바이트 수가 같음
-		// 근데 이 바이트 수가 다르면 서버에서 정렬 
+		// 여기부터 그 targetLen - recvLen 이거 해야할듯
+		// 자꾸 recv하면서 버퍼 읽는거 깨지는데 -> 서버 측 send()에서 전송 바이트 조정, 해결됨
+		// 버퍼 자료형 unsigned char 사용해서 해결
 		retval = recvn( ClientSocket, Buf, retval, 0 );
 		if(retval == SOCKET_ERROR) {
 			printf("<ERROR> recvn()(SOCKET_ERROR)!!!\n");
 			break;
 		}else if(retval == 0)	break;
 
-		Buf[retval]= '\0';
-		printf("[TCP 클라이언트] %d 바이트를 받았습니다.\n", retval);
-		printf("[받은 데이타] %s \n", Buf);
-		Sleep(1000);
+		//Buf[retval]= '\0';
+		datacnt = Buf[0];	// 맨앞 데이터 개수
+		printf("[TCP 클라이언트] 서버로부터 %d 바이트를 받았습니다.\n", retval);
+		printf("ㅡㅡㅡㅡㅡ[수신한 메세지 내용]ㅡㅡㅡㅡㅡ\n");
+		printf("$\tcnt : %d\n", datacnt);
+		printf("$\t현재 좌표 <%d, %d>\n", Buf[1], Buf[1 + 1 * sizeof(int)]);
+		printf("$\tcommand : %c\n", Buf[1 + (int)datacnt * sizeof(int)]);
+		printf("ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ\n\n\n");
+
+		
+
+		Sleep(3000); // 반복 주기
 	}
 	
 	closesocket( ClientSocket );
