@@ -6,7 +6,6 @@
 
 #define BUF_SIZE 512
 
-int  x, y;
 void ErrorDisplay(char* str)
 {
     printf("<ERROR> %s!!!\n", str);
@@ -14,60 +13,8 @@ void ErrorDisplay(char* str)
 }
 
 // 사용자 정의 데이터 수신 함수
-int recvn(SOCKET s, char* buf, int len, int flags, int x, int y)
-{
-    int received;
-    char* ptr = buf;
-    int left = len;
-
-    while (left > 0)
-    {
-        fd_set readfds;
-        FD_ZERO(&readfds);
-        FD_SET(s, &readfds);
-
-        printf("\n[TCP 클라이언트] 현재 드론 좌표를 전송합니다. (%d, %d)\n", x, y);
-        int sent = send(s, buf, 2 * sizeof(int) + 3, 0);
-        printf("[TCP 클라이언트] 성공적으로 메세지를 보냈습니다. (%d Bytes)\n", sent);
-        printf("▲▲▲▲▲[발송한 메세지 내용]▲▲▲▲▲\n");
-        printf("$cnt : \t\t%d\n", buf[0]);
-        printf("$현재 좌표 : \t<% d, % d>\n", x, y);
-        printf("$command :\t%c\n", buf[1 + 2 * sizeof(int)]);
-        printf("▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲\n");
-        Sleep(5000);    // 반복 주기, 5초
-
-        // select 함수를 사용하여 소켓의 상태를 모니터링
-        struct timeval timeout = { 0, 0 };
-        int retval = select(0, &readfds, NULL, NULL, &timeout);
-
-        if (retval == SOCKET_ERROR)
-        {
-            return SOCKET_ERROR;
-        }
-        else if (retval == 0)
-        {
-            // 타임아웃
-            printf("\n[TCP 클라이언트]서버에서 보낸 메세지가 없습니다.\n");
-            Sleep(1000);
-            continue;
-        }
-        else if (FD_ISSET(s, &readfds))
-        {
-            printf("[TCP 클라이언트] 서버로부터 메세지가 도착하였습니다.\n");
-            // 데이터가 도착했으므로 recv 함수 호출
-            received = recv(s, ptr, left, flags);
-            if (received == SOCKET_ERROR)
-                return SOCKET_ERROR;
-            else if (received == 0)
-                break;
-
-            left -= received;
-            ptr += received;
-        }
-    }
-
-    return (len - left);
-}
+int recvn(SOCKET s, char* buf, int len, int flags, int x, int y);
+int  x, y;
 
 
 int main(int argc, char* argv[])
@@ -169,4 +116,58 @@ int main(int argc, char* argv[])
     closesocket(ClientSocket);
     WSACleanup();
     return 0;
+}
+
+int recvn(SOCKET s, char* buf, int len, int flags, int x, int y) {
+    int received;
+    char* ptr = buf;
+    int left = len;
+
+    while (left > 0)
+    {
+        fd_set readfds;
+        FD_ZERO(&readfds);
+        FD_SET(s, &readfds);
+
+        printf("\n[TCP 클라이언트] 현재 드론 좌표를 전송합니다. (%d, %d)\n", x, y);
+        int sent = send(s, buf, 2 * sizeof(int) + 3, 0);
+        printf("[TCP 클라이언트] 성공적으로 메세지를 보냈습니다. (%d Bytes)\n", sent);
+        printf("▲▲▲▲▲[발송한 메세지 내용]▲▲▲▲▲\n");
+        printf("$cnt : \t\t%d\n", buf[0]);
+        printf("$현재 좌표 : \t<% d, % d>\n", x, y);
+        printf("$command :\t%c\n", buf[1 + 2 * sizeof(int)]);
+        printf("▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲\n");
+        Sleep(5000);    // 반복 주기, 5초
+
+        // select 함수를 사용하여 소켓의 상태를 모니터링
+        struct timeval timeout = { 0, 0 };
+        int retval = select(0, &readfds, NULL, NULL, &timeout);
+
+        if (retval == SOCKET_ERROR)
+        {
+            return SOCKET_ERROR;
+        }
+        else if (retval == 0)
+        {
+            // 타임아웃
+            printf("\n[TCP 클라이언트]서버에서 보낸 메세지가 없습니다.\n");
+            Sleep(1000);
+            continue;
+        }
+        else if (FD_ISSET(s, &readfds))
+        {
+            printf("[TCP 클라이언트] 서버로부터 메세지가 도착하였습니다.\n");
+            // 데이터가 도착했으므로 recv 함수 호출
+            received = recv(s, ptr, left, flags);
+            if (received == SOCKET_ERROR)
+                return SOCKET_ERROR;
+            else if (received == 0)
+                break;
+
+            left -= received;
+            ptr += received;
+        }
+    }
+
+    return (len - left);
 }

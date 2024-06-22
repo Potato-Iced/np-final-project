@@ -15,13 +15,12 @@ typedef struct pos {
     int y;
 } POS;
 
-void gotoxy(int x, int y);
 void ErrorHandling(char* message);
-//POS* RoutePlanner(POS*);	// 드론 이동 경로 탐색용
+
+void gotoxy(int x, int y);  // 커서 이동
 DWORD WINAPI KeyInputThread(LPVOID param); // 드론 조종 명령 스레드
 void statusDraw();	// 현재 드론 위치정보 시각화
 void droneInit();	// 초기화
-
 
 POS droneList[DRONE_AMOUNT + 1] = { 0, };   // 배열 1, 2, 3 사용 예정이라 +1
 SOCKET hServSock;
@@ -127,8 +126,6 @@ int main(void) {
                             ntohs(clntAdr.sin_port), strLen);
 
                         // 드론 정보 구조체에 저장
-                        // 명령어 종류 상관 없이 x좌표의 인덱스는 [1], y좌표 인덱스는 [1 + 1*sizeof(int)] 고정
-                        //printf("%%%  현재 for문 i : %d  %%%\n", i);	// debug
                         droneList[i].x = buf[1];
                         droneList[i].y = buf[1 + 1 * sizeof(int)];
                         droneList[i].port = ntohs(clntAdr.sin_port);
@@ -151,7 +148,7 @@ int main(void) {
 }
 
 void gotoxy(int x, int y) {
-    COORD pos = { x * 2,y };	// 콘솔에서 알파벳은 0.5크기라 2배 해줌
+    COORD pos = { x * 2,y };	// 콘솔에서 알파벳은 0.5크기라 x2
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
 }
 
@@ -242,7 +239,7 @@ DWORD WINAPI KeyInputThread(LPVOID param) {
 void statusDraw() {
 
     printf("고도200mㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ\n"); // 50개
-    for (int i = 0; i <= DRONE_AMOUNT; i++) {	// 느낌이 항상 i는 1 2 3만 왔다갔다 하던데
+    for (int i = 0; i <= DRONE_AMOUNT; i++) {
         if (droneList[i].port != 0) {
             gotoxy(droneList[i].x / 4, droneList[i].y / 4);
             printf("★");
@@ -259,11 +256,12 @@ void ErrorHandling(char* message) {
     fputc('\n', stderr);
     exit(1);
 }
+
 void droneInit() {
     printf("\nㅡㅡㅡㅡㅡ TCP 네트워크 드론 통신 프로그램 ㅡㅡㅡㅡ\n\n");
     printf("server> 네트워크프로그래밍 팀프로젝트 - 2024학년도 1학기\n");
-    printf("server> 팀원1 : 2020152019 서동영 - 설계, GUI 구현\n");
-    printf("server> 팀원2 : 2019156012 박준표 - 멀티스레드 구현\n");
+    printf("server> 팀원1 : 2020152019 서동영 - 설계, GUI 구현, 데모 영상 제작\n");
+    printf("server> 팀원2 : 2019156012 박준표 - 멀티스레드 구현, 보고서 작성\n");
     Sleep(3000);
     for (int i = 0; i <= DRONE_AMOUNT; i++) {
         droneList[i].port = 0;
