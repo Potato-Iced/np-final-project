@@ -118,7 +118,7 @@ int main(int argc, char* argv[])
     printf("$\tcommand : %c\n", Buf[1 + 2 * sizeof(int)]);
 
     while (1)
-    {
+    { 
         ZeroMemory(Buf, sizeof(Buf));
         Buf[0] = (char)2;
         Buf[1] = x;
