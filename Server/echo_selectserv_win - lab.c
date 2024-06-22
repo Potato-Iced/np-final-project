@@ -23,7 +23,7 @@ void statusDraw();	// í˜„ì¬ ë“œë¡  ìœ„ì¹˜ì •ë³´ ì‹œê°í™”
 void droneInit();	// ë“œë¡  ë°°ì—´ ì´ˆê¸°í™”
 
 
-POS droneList[DRONE_AMOUNT + 1] = { 0, }; // ÀÎµ¦½º 0ºÎÅÍ ½ÃÀÛÀÎµ¥ ½ÇÁ¦·Î´Â 1, 2, 3¸¸ ¾µ°Å¶ó¼­ +1, [0]ºÎºĞÀº °Á ´õ¹Ì
+POS droneList[DRONE_AMOUNT + 1] = { 0, }; // ï¿½Îµï¿½ï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Îµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Î´ï¿½ 1, 2, 3ï¿½ï¿½ ï¿½ï¿½ï¿½Å¶ï¿½ +1, [0]ï¿½Îºï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 SOCKET hServSock;
 fd_set reads;
 
@@ -143,16 +143,6 @@ int main(void) {
                     }
                 }
             }
-        }
-        DWORD threadExitCode;
-        GetExitCodeThread(hThread, &threadExitCode);
-        if (threadExitCode != STILL_ACTIVE) {
-            CloseHandle(hThread);
-            hThread = CreateThread(NULL, 0, KeyInputThread, NULL, 0, NULL);
-            if (hThread == NULL) {
-                ErrorHandling("CreateThread() error");
-            }
-            printf("í‚¤ ì…ë ¥ ì²˜ë¦¬ ìŠ¤ë ˆë“œê°€ ì¬ì‹œì‘ë˜ì—ˆìŠµë‹ˆë‹¤.\n");
         }
     }
 
