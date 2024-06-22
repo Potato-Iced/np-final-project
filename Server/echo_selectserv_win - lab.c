@@ -23,7 +23,7 @@ void statusDraw();	// 현재 드론 위치정보 시각화
 void droneInit();	// 드론 배열 초기화
 
 
-POS droneList[DRONE_AMOUNT] = { 0, };
+POS droneList[DRONE_AMOUNT + 1] = { 0, };   // 배열 1, 2, 3 사용 예정이라 +1
 SOCKET hServSock;
 fd_set reads;
 
