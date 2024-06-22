@@ -17,10 +17,10 @@ typedef struct pos {
 
 void gotoxy(int x, int y);
 void ErrorHandling(char* message);
-//POS* RoutePlanner(POS*);	// µå·Ğ ÀÌµ¿ °æ·Î Å½»ö¿ë
-DWORD WINAPI KeyInputThread(LPVOID param); // µå·Ğ Á¶Á¾ ¸í·É ½º·¹µå
-void statusDraw();	// ÇöÀç µå·Ğ À§Ä¡Á¤º¸ ½Ã°¢È­
-void droneInit();	// µå·Ğ ¹è¿­ ÃÊ±âÈ­
+//POS* RoutePlanner(POS*);	// ë“œë¡  ì´ë™ ê²½ë¡œ íƒìƒ‰ìš©
+DWORD WINAPI KeyInputThread(LPVOID param); // ë“œë¡  ì¡°ì¢… ëª…ë ¹ ìŠ¤ë ˆë“œ
+void statusDraw();	// í˜„ì¬ ë“œë¡  ìœ„ì¹˜ì •ë³´ ì‹œê°í™”
+void droneInit();	// ë“œë¡  ë°°ì—´ ì´ˆê¸°í™”
 
 
 POS droneList[DRONE_AMOUNT] = { 0, };
@@ -34,8 +34,8 @@ int main(void) {
     unsigned char buf[BUF_SIZE];
     int addrlen;
 
-    system("mode con lines=81 cols=122");	// ¼­¹ö ÄÜ¼Ö Ã¢ Å©±â Á¶Á¤
-    droneInit();							// µå·Ğ ÀúÀå ¹è¿­ ÃÊ±âÈ­
+    system("mode con lines=81 cols=122");	// ì„œë²„ ì½˜ì†” ì°½ í¬ê¸° ì¡°ì •
+    droneInit();							// ë“œë¡  ì €ì¥ ë°°ì—´ ì´ˆê¸°í™”
 
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
         ErrorHandling("WSAStartup() error!");
@@ -54,7 +54,7 @@ int main(void) {
     FD_ZERO(&reads);
     FD_SET(hServSock, &reads);
 
-    // Å° ÀÔ·Â Ã³¸® ½º·¹µå »ı¼º
+    // í‚¤ ì…ë ¥ ì²˜ë¦¬ ìŠ¤ë ˆë“œ ìƒì„±
     HANDLE hThread = CreateThread(NULL, 0, KeyInputThread, NULL, 0, NULL);
     if (hThread == NULL) {
         ErrorHandling("CreateThread() error");
@@ -75,15 +75,15 @@ int main(void) {
             continue;
         }
 
-        // GUI °»½Å
+        // GUI ê°±ì‹ 
         system("cls");
         statusDraw();
 
-        printf("M Å°¸¦ ´­·¯ µå·Ğ ÀÌµ¿ ¸ğµå, QÅ°¸¦ ´­·¯ µå·Ğ Á¤·Ä ¹× Á¾·á..\n\n");
+        printf("M í‚¤ë¥¼ ëˆŒëŸ¬ ë“œë¡  ì´ë™ ëª¨ë“œ, Qí‚¤ë¥¼ ëˆŒëŸ¬ ë“œë¡  ì •ë ¬ ë° ì¢…ë£Œ..\n\n");
         if (totalcount > 0) {
-            printf("ÇöÀç ¿¬°áµÈ µå·Ğ Á¤º¸:\n");
+            printf("í˜„ì¬ ì—°ê²°ëœ ë“œë¡  ì •ë³´:\n");
             for (int i = 1; i <= totalcount; i++) {
-                printf("%d) port = %d, ÁÂÇ¥ = <%d, %d>\n", i, droneList[i].port, droneList[i].x, droneList[i].y);
+                printf("%d) port = %d, ì¢Œí‘œ = <%d, %d>\n", i, droneList[i].port, droneList[i].x, droneList[i].y);
             }
         }
         for (i = 0; i < reads.fd_count; i++) {
@@ -100,15 +100,15 @@ int main(void) {
                     FD_SET(hClntSock, &reads);
                 }
                 else {
-                    // data ¼ö½Å.
+                    // data ìˆ˜ì‹ .
                     strLen = recv(reads.fd_array[i], buf, BUF_SIZE - 1, 0);
                     if (strLen <= 0) {
                         closesocket(reads.fd_array[i]);
                         FD_CLR(reads.fd_array[i], &reads);
-                        printf("server> µå·Ğ %d Á¢¼Ó Á¾·á.. (IP:%s)\n",
+                        printf("server> ë“œë¡  %d ì ‘ì† ì¢…ë£Œ.. (IP:%s)\n",
                             ntohs(clntAdr.sin_port), inet_ntoa(clntAdr.sin_addr));
                         totalcount--;
-                        // µî·ÏµÈ µå·Ğ Á¤º¸ Áö¿ì±â + Ç¥½Ã Áö¿ì±â
+                        // ë“±ë¡ëœ ë“œë¡  ì •ë³´ ì§€ìš°ê¸° + í‘œì‹œ ì§€ìš°ê¸°
                         droneList[i].port = 0;
                         gotoxy(droneList[i].x / 4, droneList[i].y / 4);
                         printf(" ");
@@ -119,10 +119,10 @@ int main(void) {
                         addrlen = sizeof(clntAdr);
                         getpeername(reads.fd_array[i], (SOCKADDR*)&clntAdr, &addrlen);
 
-                        printf("server> µå·Ğ %d ·ÎºÎÅÍ ¸Ş¼¼Áö ¼ö½Å (%d Bytes)\n",
+                        printf("server> ë“œë¡  %d ë¡œë¶€í„° ë©”ì„¸ì§€ ìˆ˜ì‹  (%d Bytes)\n",
                             ntohs(clntAdr.sin_port), strLen);
 
-                        // µå·ĞÀÇ À§Ä¡ ¾÷µ¥ÀÌÆ®
+                        // ë“œë¡ ì˜ ìœ„ì¹˜ ì—…ë°ì´íŠ¸
                         //for (int j = 0; j < DRONE_AMOUNT; j++) {
                         //    if (droneList[j].port == 0 || droneList[j].port == ntohs(clntAdr.sin_port)) {
                         //        droneList[j].x = buf[1];
@@ -131,18 +131,28 @@ int main(void) {
                         //        break;
                         //    }
                         //}
-                        // µå·Ğ Á¤º¸ ±¸Á¶Ã¼¿¡ ÀúÀå
-                        // ¸í·É¾î Á¾·ù »ó°ü ¾øÀÌ xÁÂÇ¥ÀÇ ÀÎµ¦½º´Â [1], yÁÂÇ¥ ÀÎµ¦½º´Â [1 + 1*sizeof(int)] °íÁ¤
-                        printf("%%%  ÇöÀç for¹® i : %d  %%%\n", i);	// debug
+                        // ë“œë¡  ì •ë³´ êµ¬ì¡°ì²´ì— ì €ì¥
+                        // ëª…ë ¹ì–´ ì¢…ë¥˜ ìƒê´€ ì—†ì´ xì¢Œí‘œì˜ ì¸ë±ìŠ¤ëŠ” [1], yì¢Œí‘œ ì¸ë±ìŠ¤ëŠ” [1 + 1*sizeof(int)] ê³ ì •
+                        printf("%%%  í˜„ì¬ forë¬¸ i : %d  %%%\n", i);	// debug
                         droneList[i].x = buf[1];
                         droneList[i].y = buf[1 + 1 * sizeof(int)];
                         droneList[i].port = ntohs(clntAdr.sin_port);
-                        printf("[µå·Ğ %d]\n", droneList[i].port);
-                        printf("$\tÇöÀç ÁÂÇ¥ <%d, %d>\n", droneList[i].x, droneList[i].y);
+                        printf("[ë“œë¡  %d]\n", droneList[i].port);
+                        printf("$\tí˜„ì¬ ì¢Œí‘œ <%d, %d>\n", droneList[i].x, droneList[i].y);
                         printf("$\tcommand : %c\n\n\n", buf[1 + 2 * sizeof(int)]);
                     }
                 }
             }
+        }
+        DWORD threadExitCode;
+        GetExitCodeThread(hThread, &threadExitCode);
+        if (threadExitCode != STILL_ACTIVE) {
+            CloseHandle(hThread);
+            hThread = CreateThread(NULL, 0, KeyInputThread, NULL, 0, NULL);
+            if (hThread == NULL) {
+                ErrorHandling("CreateThread() error");
+            }
+            printf("í‚¤ ì…ë ¥ ì²˜ë¦¬ ìŠ¤ë ˆë“œê°€ ì¬ì‹œì‘ë˜ì—ˆìŠµë‹ˆë‹¤.\n");
         }
     }
 
@@ -155,7 +165,7 @@ int main(void) {
 }
 
 void gotoxy(int x, int y) {
-    COORD pos = { x * 2,y };	// ÄÜ¼Ö¿¡¼­ ¾ËÆÄºªÀº 0.5Å©±â¶ó 2¹è ÇØÁÜ
+    COORD pos = { x * 2,y };	// ì½˜ì†”ì—ì„œ ì•ŒíŒŒë²³ì€ 0.5í¬ê¸°ë¼ 2ë°° í•´ì¤Œ
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
 }
 
@@ -164,14 +174,14 @@ DWORD WINAPI KeyInputThread(LPVOID param) {
     while (1) {
         if (GetAsyncKeyState(0x4D) & 0x8000) {
             int con_port, newX, newY;
-            printf("MÅ° ÀÔ·Â °¨Áö\n");
-            printf("Æ÷Æ® ¹øÈ£, x ÁÂÇ¥, y ÁÂÇ¥¸¦ ÀÔ·ÂÇÏ¼¼¿ä: ");
+            printf("Mí‚¤ ì…ë ¥ ê°ì§€\n");
+            printf("í¬íŠ¸ ë²ˆí˜¸, x ì¢Œí‘œ, y ì¢Œí‘œë¥¼ ì…ë ¥í•˜ì„¸ìš”: ");
             scanf("%d %d %d", &con_port, &newX, &newY);
 
             if (newY > 200 || newY < 20 || newX > 200)
             {
-                printf("ÁÂÇ¥°ª ¹üÀ§ xÁÂÇ¥ 0~200, yÁÂÇ¥ 20~200\n");
-                printf("ÁÂÇ¥°ª ¹üÀ§ ¹ş¾î³², ¸í·É Ãë¼Ò\n");
+                printf("ì¢Œí‘œê°’ ë²”ìœ„ xì¢Œí‘œ 0~200, yì¢Œí‘œ 20~200\n");
+                printf("ì¢Œí‘œê°’ ë²”ìœ„ ë²—ì–´ë‚¨, ëª…ë ¹ ì·¨ì†Œ\n");
                 break;
             }
 
@@ -186,7 +196,7 @@ DWORD WINAPI KeyInputThread(LPVOID param) {
                         buf[1] = newX;
                         buf[2] = newY;
                         send(reads.fd_array[i], buf, 3, 0);
-                        printf("µå·Ğ %dÀÇ »õ·Î¿î ÁÂÇ¥ <%d, %d>¸¦ Àü¼ÛÇß½À´Ï´Ù.\n", con_port, newX, newY);
+                        printf("ë“œë¡  %dì˜ ìƒˆë¡œìš´ ì¢Œí‘œ <%d, %d>ë¥¼ ì „ì†¡í–ˆìŠµë‹ˆë‹¤.\n", con_port, newX, newY);
                         break;
                     }
                 }
@@ -194,8 +204,8 @@ DWORD WINAPI KeyInputThread(LPVOID param) {
         }
 
         if (GetAsyncKeyState(0x51) & 0x8000) {
-            printf("QÅ° ÀÔ·Â °¨Áö\n");
-            printf("[µå·Ğ Á¤·Ä ¸ğµå]\n");
+            printf("Qí‚¤ ì…ë ¥ ê°ì§€\n");
+            printf("[ë“œë¡  ì •ë ¬ ëª¨ë“œ]\n");
 
             for (int i = 0; i < reads.fd_count; i++) {
                 if (reads.fd_array[i] != hServSock) {
@@ -207,7 +217,7 @@ DWORD WINAPI KeyInputThread(LPVOID param) {
                     buf[1] = i * 20;
                     buf[2] = 100;
                     send(reads.fd_array[i], buf, 3, 0);
-                    printf("µå·Ğ %dÀÇ Á¤·ÄÁÂÇ¥ ÁÂÇ¥ <%d, %d>¸¦ Àü¼ÛÇß½À´Ï´Ù.\n", ntohs(clientaddr.sin_port), buf[1], buf[2]);
+                    printf("ë“œë¡  %dì˜ ì •ë ¬ì¢Œí‘œ ì¢Œí‘œ <%d, %d>ë¥¼ ì „ì†¡í–ˆìŠµë‹ˆë‹¤.\n", ntohs(clientaddr.sin_port), buf[1], buf[2]);
                     Sleep(5000);
 
                 }
@@ -223,7 +233,7 @@ DWORD WINAPI KeyInputThread(LPVOID param) {
                     buf[1] = (i * 20) + 50;
                     buf[2] = 100;
                     send(reads.fd_array[i], buf, 3, 0);
-                    printf("µå·Ğ %dÀÇ Á¤·ÄÈÄ ÀÌµ¿ÁÂÇ¥ ÁÂÇ¥ <%d, %d>¸¦ Àü¼ÛÇß½À´Ï´Ù.\n", ntohs(clientaddr.sin_port), buf[1], buf[2]);
+                    printf("ë“œë¡  %dì˜ ì •ë ¬í›„ ì´ë™ì¢Œí‘œ ì¢Œí‘œ <%d, %d>ë¥¼ ì „ì†¡í–ˆìŠµë‹ˆë‹¤.\n", ntohs(clientaddr.sin_port), buf[1], buf[2]);
                     Sleep(5000);
 
                 }
@@ -245,17 +255,17 @@ DWORD WINAPI KeyInputThread(LPVOID param) {
 
 void statusDraw() {
 
-    printf("°íµµ200m¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ\n"); // 50°³
-    for (int i = 0; i <= DRONE_AMOUNT; i++) {	// ´À³¦ÀÌ Ç×»ó i´Â 1 2 3¸¸ ¿Ô´Ù°¬´Ù ÇÏ´øµ¥
+    printf("ê³ ë„200mã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡\n"); // 50ê°œ
+    for (int i = 0; i <= DRONE_AMOUNT; i++) {	// ëŠë‚Œì´ í•­ìƒ iëŠ” 1 2 3ë§Œ ì™”ë‹¤ê°”ë‹¤ í•˜ë˜ë°
         if (droneList[i].port != 0) {
             gotoxy(droneList[i].x / 4, droneList[i].y / 4);
-            printf("¡Ú");
+            printf("â˜…");
         }
 
     }
     gotoxy(0, 51);
-    printf("°íµµ20m-¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ¤Ñ\n"); // 50°³
-    printf("                                                  ¡è±âÁö±¹\n\n");
+    printf("ê³ ë„20m-ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡ã…¡\n"); // 50ê°œ
+    printf("                                                  â†‘ê¸°ì§€êµ­\n\n");
 }
 
 void ErrorHandling(char* message) {
