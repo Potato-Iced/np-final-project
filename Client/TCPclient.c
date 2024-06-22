@@ -65,7 +65,7 @@ int recvn(SOCKET s, char* buf, int len, int flags, int x, int y)
 int main(int argc, char* argv[])
 {
     int retval, x, y, opening_x, opening_y;
-    int		rcvLen, targetLen;
+    //int		rcvLen, targetLen;
     char	datacnt;
     WSADATA wsa;
     retval = WSAStartup(MAKEWORD(2, 2), &wsa);
