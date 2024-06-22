@@ -66,6 +66,22 @@ int main(void) {
         timeout.tv_sec = 2;
         timeout.tv_usec = 2000;
 
+        // GUI 갱신
+        system("cls");
+        statusDraw();
+
+        printf("M 키를 눌러 드론 이동 모드, Q키를 눌러 드론 정렬 및 종료..\n\n");
+        printf("현재 연결된 드론 정보:\n");
+        if (totalcount > 0) {
+            for (int i = 1; i <= totalcount; i++) {
+                printf("%d) port = %d, 좌표 = <%d, %d>\n", i, droneList[i].port, droneList[i].x, droneList[i].y);
+            }
+            printf("\n");
+        }
+        else {
+            printf("server> 현재 연결된 드론이 없습니다!\n");
+        }
+
         fdNum = select(0, &cpyReads, 0, 0, &timeout);
         if (fdNum == SOCKET_ERROR) {
             closesocket(hServSock);
@@ -73,19 +89,6 @@ int main(void) {
         }
         else if (fdNum == 0) {
             continue;
-        }
-
-        // GUI 갱신
-        system("cls");
-        statusDraw();
-
-        printf("M 키를 눌러 드론 이동 모드, Q키를 눌러 드론 정렬 및 종료..\n\n");
-        if (totalcount > 0) {
-            printf("현재 연결된 드론 정보:\n");
-            for (int i = 1; i <= totalcount; i++) {
-                printf("%d) port = %d, 좌표 = <%d, %d>\n", i, droneList[i].port, droneList[i].x, droneList[i].y);
-            }
-            printf("\n");
         }
         for (i = 0; i < reads.fd_count; i++) {
             if (FD_ISSET(reads.fd_array[i], &cpyReads)) {
@@ -257,12 +260,15 @@ void ErrorHandling(char* message) {
     exit(1);
 }
 void droneInit() {
-    printf("ㅡㅡㅡㅡㅡ TCP 네트워크 드론 통신 프로그램 ㅡㅡㅡㅡ\n");
-    printf("server> 클라이언트가 연결되면 시작합니다.\n");
-    printf("server> 클라이언트 연결 대기중..");
-
+    printf("\nㅡㅡㅡㅡㅡ TCP 네트워크 드론 통신 프로그램 ㅡㅡㅡㅡ\n\n");
+    printf("server> 네트워크프로그래밍 팀프로젝트 - 2024학년도 1학기\n");
+    printf("server> 팀원1 : 2020152019 서동영 - 설계, GUI 구현\n");
+    printf("server> 팀원2 : 2019156012 박준표 - 멀티스레드 구현\n");
+    Sleep(3000);
     for (int i = 0; i <= DRONE_AMOUNT; i++) {
         droneList[i].port = 0;
     }
+    printf("server> 곧 프로그램을 시작합니다.\n");
+    Sleep(2000);
     return;
 }
