@@ -85,6 +85,7 @@ int main(void) {
             for (int i = 1; i <= totalcount; i++) {
                 printf("%d) port = %d, 좌표 = <%d, %d>\n", i, droneList[i].port, droneList[i].x, droneList[i].y);
             }
+            printf("\n");
         }
         for (i = 0; i < reads.fd_count; i++) {
             if (FD_ISSET(reads.fd_array[i], &cpyReads)) {
@@ -119,21 +120,12 @@ int main(void) {
                         addrlen = sizeof(clntAdr);
                         getpeername(reads.fd_array[i], (SOCKADDR*)&clntAdr, &addrlen);
 
-                        printf("server> 드론 %d 로부터 메세지 수신 (%d Bytes)\n",
+                        printf("server> 드론 %d 로부터 메세지 수신 (%d Bytes)\n\n",
                             ntohs(clntAdr.sin_port), strLen);
 
-                        // 드론의 위치 업데이트
-                        //for (int j = 0; j < DRONE_AMOUNT; j++) {
-                        //    if (droneList[j].port == 0 || droneList[j].port == ntohs(clntAdr.sin_port)) {
-                        //        droneList[j].x = buf[1];
-                        //        droneList[j].y = buf[1 + 1 * sizeof(int)];
-                        //        droneList[j].port = ntohs(clntAdr.sin_port);
-                        //        break;
-                        //    }
-                        //}
                         // 드론 정보 구조체에 저장
                         // 명령어 종류 상관 없이 x좌표의 인덱스는 [1], y좌표 인덱스는 [1 + 1*sizeof(int)] 고정
-                        printf("%%%  현재 for문 i : %d  %%%\n", i);	// debug
+                        //printf("%%%  현재 for문 i : %d  %%%\n", i);	// debug
                         droneList[i].x = buf[1];
                         droneList[i].y = buf[1 + 1 * sizeof(int)];
                         droneList[i].port = ntohs(clntAdr.sin_port);
@@ -164,15 +156,15 @@ DWORD WINAPI KeyInputThread(LPVOID param) {
     while (1) {
         if (GetAsyncKeyState(0x4D) & 0x8000) {
             int con_port, newX, newY;
-            printf("M키 입력 감지\n");
-            printf("포트 번호, x 좌표, y 좌표를 입력하세요: ");
+            printf("server> M키 입력 감지\n");
+            printf("server> 포트 번호, x 좌표, y 좌표를 입력하세요: ");
             scanf("%d %d %d", &con_port, &newX, &newY);
 
             if (newY > 200 || newY < 20 || newX > 200)
             {
-                printf("좌표값 범위 x좌표 0~200, y좌표 20~200\n");
-                printf("좌표값 범위 벗어남, 명령 취소\n");
-                break;
+                printf("server> 좌표값 범위 x좌표 0~200, y좌표 20~200\n");
+                printf("server> [ERROR] 좌표값 범위 벗어남, 명령 취소\n");
+                fflush(stdin);
             }
 
             for (int i = 1; i < totalcount + 1; i++) {
@@ -186,7 +178,7 @@ DWORD WINAPI KeyInputThread(LPVOID param) {
                         buf[1] = newX;
                         buf[2] = newY;
                         send(reads.fd_array[i], buf, 3, 0);
-                        printf("드론 %d의 새로운 좌표 <%d, %d>를 전송했습니다.\n", con_port, newX, newY);
+                        printf("server> 드론 %d의 새로운 좌표 <%d, %d>를 전송했습니다.\n", con_port, newX, newY);
                         break;
                     }
                 }
@@ -207,7 +199,7 @@ DWORD WINAPI KeyInputThread(LPVOID param) {
                     buf[1] = i * 20;
                     buf[2] = 100;
                     send(reads.fd_array[i], buf, 3, 0);
-                    printf("드론 %d의 정렬좌표 좌표 <%d, %d>를 전송했습니다.\n", ntohs(clientaddr.sin_port), buf[1], buf[2]);
+                    printf("server> 드론 %d의 정렬좌표 좌표 <%d, %d>를 전송했습니다.\n", ntohs(clientaddr.sin_port), buf[1], buf[2]);
                     Sleep(5000);
 
                 }

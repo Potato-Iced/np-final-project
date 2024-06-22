@@ -5,10 +5,8 @@
 #include <windows.h>
 
 #define BUF_SIZE 512
-#define A_LEN		2
-#define R_LEN		2
-#define M_LEN		3
 
+int  x, y;
 void ErrorDisplay(char* str)
 {
     printf("<ERROR> %s!!!\n", str);
@@ -28,9 +26,15 @@ int recvn(SOCKET s, char* buf, int len, int flags, int x, int y)
         FD_ZERO(&readfds);
         FD_SET(s, &readfds);
 
-        printf("[TCP 클라이언트] 현재 드론 좌표 전송 (%d, %d)\n", x, y);
+        printf("\n[TCP 클라이언트] 현재 드론 좌표를 전송합니다. (%d, %d)\n", x, y);
         int sent = send(s, buf, 2 * sizeof(int) + 3, 0);
-        Sleep(10000);
+        printf("[TCP 클라이언트] 성공적으로 메세지를 보냈습니다. (%d Bytes)\n", sent);
+        printf("@@@@@@@@@@[발송한 메세지 내용]@@@@@@@@@@\n");
+        printf("$\tcnt : %d\n", buf[0]);
+        printf("$\t현재 좌표 <%d, %d>\n", x, y);
+        printf("$\tcommand : %c\n", buf[1 + 2 * sizeof(int)]);
+        printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n\n\n");
+        Sleep(5000);    // 반복 주기, 5초
 
         // select 함수를 사용하여 소켓의 상태를 모니터링
         struct timeval timeout = { 0, 0 };
@@ -43,10 +47,12 @@ int recvn(SOCKET s, char* buf, int len, int flags, int x, int y)
         else if (retval == 0)
         {
             // 타임아웃
+            printf("[TCP 클라이언트]서버에서 보낸 메세지가 없습니다.\n");
             continue;
         }
         else if (FD_ISSET(s, &readfds))
         {
+            printf("[TCP 클라이언트] 서버로부터 메세지가 도착하였습니다.\n");
             // 데이터가 도착했으므로 recv 함수 호출
             received = recv(s, ptr, left, flags);
             if (received == SOCKET_ERROR)
@@ -62,9 +68,10 @@ int recvn(SOCKET s, char* buf, int len, int flags, int x, int y)
     return (len - left);
 }
 
+
 int main(int argc, char* argv[])
 {
-    int retval, x, y, opening_x, opening_y;
+    int retval, opening_x, opening_y;
     //int		rcvLen, targetLen;
     char	datacnt;
     WSADATA wsa;
@@ -119,6 +126,9 @@ int main(int argc, char* argv[])
 
     while (1)
     { 
+        opening_x = x;
+        opening_y = y;
+
         ZeroMemory(Buf, sizeof(Buf));
         Buf[0] = (char)2;
         Buf[1] = x;
@@ -152,7 +162,6 @@ int main(int argc, char* argv[])
         printf("$\tcommand : %c\n", Buf[1 + (int)datacnt * sizeof(int)]);
         printf("ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ\n\n\n");
 
-        //Sleep(3000);
     }
 
     closesocket(ClientSocket);
