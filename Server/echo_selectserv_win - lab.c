@@ -4,7 +4,7 @@
 #include <winsock2.h>
 #include <Windows.h>
 
-#define BUF_SIZE 1024
+#define BUF_SIZE 512
 #define DRONE_AMOUNT 3
 
 int totalcount = 0, closenum = 1;
@@ -20,7 +20,7 @@ void ErrorHandling(char* message);
 //POS* RoutePlanner(POS*);	// 드론 이동 경로 탐색용
 DWORD WINAPI KeyInputThread(LPVOID param); // 드론 조종 명령 스레드
 void statusDraw();	// 현재 드론 위치정보 시각화
-void droneInit();	// 드론 배열 초기화
+void droneInit();	// 초기화
 
 
 POS droneList[DRONE_AMOUNT + 1] = { 0, };   // 배열 1, 2, 3 사용 예정이라 +1
@@ -130,8 +130,9 @@ int main(void) {
                         droneList[i].y = buf[1 + 1 * sizeof(int)];
                         droneList[i].port = ntohs(clntAdr.sin_port);
                         printf("[드론 %d]\n", droneList[i].port);
-                        printf("$\t현재 좌표 <%d, %d>\n", droneList[i].x, droneList[i].y);
-                        printf("$\tcommand : %c\n\n\n", buf[1 + 2 * sizeof(int)]);
+                        printf("\t$cnt : \t\t%d\n", buf[0]);
+                        printf("\t$현재 좌표 : \t<% d, % d>\n", droneList[i].x, droneList[i].y);
+                        printf("\t$command :\t%c\n\n\n", buf[1 + 2 * sizeof(int)]);
                     }
                 }
             }
@@ -256,6 +257,10 @@ void ErrorHandling(char* message) {
     exit(1);
 }
 void droneInit() {
+    printf("ㅡㅡㅡㅡㅡ TCP 네트워크 드론 통신 프로그램 ㅡㅡㅡㅡ\n");
+    printf("server> 클라이언트가 연결되면 시작합니다.\n");
+    printf("server> 클라이언트 연결 대기중..");
+
     for (int i = 0; i <= DRONE_AMOUNT; i++) {
         droneList[i].port = 0;
     }

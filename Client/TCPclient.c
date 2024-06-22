@@ -29,11 +29,11 @@ int recvn(SOCKET s, char* buf, int len, int flags, int x, int y)
         printf("\n[TCP 클라이언트] 현재 드론 좌표를 전송합니다. (%d, %d)\n", x, y);
         int sent = send(s, buf, 2 * sizeof(int) + 3, 0);
         printf("[TCP 클라이언트] 성공적으로 메세지를 보냈습니다. (%d Bytes)\n", sent);
-        printf("@@@@@@@@@@[발송한 메세지 내용]@@@@@@@@@@\n");
-        printf("$\tcnt : %d\n", buf[0]);
-        printf("$\t현재 좌표 <%d, %d>\n", x, y);
-        printf("$\tcommand : %c\n", buf[1 + 2 * sizeof(int)]);
-        printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n\n\n");
+        printf("▲▲▲▲▲[발송한 메세지 내용]▲▲▲▲▲\n");
+        printf("$cnt : \t\t%d\n", buf[0]);
+        printf("$현재 좌표 : \t<% d, % d>\n", x, y);
+        printf("$command :\t%c\n", buf[1 + 2 * sizeof(int)]);
+        printf("▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲\n");
         Sleep(5000);    // 반복 주기, 5초
 
         // select 함수를 사용하여 소켓의 상태를 모니터링
@@ -47,7 +47,8 @@ int recvn(SOCKET s, char* buf, int len, int flags, int x, int y)
         else if (retval == 0)
         {
             // 타임아웃
-            printf("[TCP 클라이언트]서버에서 보낸 메세지가 없습니다.\n");
+            printf("\n[TCP 클라이언트]서버에서 보낸 메세지가 없습니다.\n");
+            Sleep(1000);
             continue;
         }
         else if (FD_ISSET(s, &readfds))
@@ -119,10 +120,11 @@ int main(int argc, char* argv[])
     }
 
     printf("[TCP 클라이언트] 성공적으로 메세지를 보냈습니다. (%d Bytes)\n", retval);
-    printf("보낸 메세지:\n");
-    printf("$\tcnt : %d\n", Buf[0]);
-    //printf("$\t현재 좌표 <%d, %d>\n", Buf[1], Buf[1 + 1 * sizeof(int)] = (char)y);
-    printf("$\tcommand : %c\n", Buf[1 + 2 * sizeof(int)]);
+    printf("▲▲▲▲▲[발송한 메세지 내용]▲▲▲▲▲\n");
+    printf("$cnt : \t\t%d\n", Buf[0]);
+    printf("$현재 좌표 : \t<% d, % d>\n", x, y);
+    printf("$command :\t%c\n", Buf[1 + 2 * sizeof(int)]);
+    printf("▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲\n");
 
     while (1)
     { 
@@ -155,12 +157,12 @@ int main(int argc, char* argv[])
         //Buf[retval]= '\0';
         datacnt = Buf[0];	// 맨앞 데이터 개수
         printf("[TCP 클라이언트] 서버로부터 %d 바이트를 받았습니다.\n", retval);
-        printf("ㅡㅡㅡㅡㅡ[수신한 메세지 내용]ㅡㅡㅡㅡㅡ\n");
-        printf("$\tcnt : %d\n", datacnt);
-        printf("$\t현재 좌표 <%d, %d>\n", opening_x, opening_y);
-        printf("$\t변경 좌표 <%d, %d>\n", x, y);
-        printf("$\tcommand : %c\n", Buf[1 + (int)datacnt * sizeof(int)]);
-        printf("ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ\n\n\n");
+        printf("■■■■■[수신한 메세지 내용]■■■■■\n");
+        printf("$cnt : \t\t%d\n", datacnt);
+        printf("$현재 좌표 : \t<% d, % d>\n", opening_x, opening_y);
+        printf("$수정 좌표 : \t<% d, % d>\n", x, y);
+        printf("$command :\t%c\n", Buf[1 + (int)datacnt * sizeof(int)]);
+        printf("■■■■■■■■■■■■■■■■■■■■\n");
 
     }
 
