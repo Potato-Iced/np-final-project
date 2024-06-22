@@ -17,7 +17,6 @@ void ErrorHandling(char *message);
 void gotoxy(int x, int y);
 
 void statusDraw();
-int round(int n);	// 정수 반올림 함수
 
 POS				droneList[DRONE_AMOUNT] = { 0, };	// 전역변수로 수정
 
@@ -213,9 +212,3 @@ void statusDraw() {
 
 }
 
-// 정수 반올림해서 만약 14면 10 리턴, 15면 20 리턴하는 함수
-int round(int n) {
-	int remainder = n % 10;
-	if (remainder < 5) return n - remainder;
-	else return n + (10 - remainder);
-}
