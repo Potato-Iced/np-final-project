@@ -152,7 +152,7 @@ int main(int argc, char* argv[])
         printf("$\tcommand : %c\n", Buf[1 + (int)datacnt * sizeof(int)]);
         printf("天天天天天天天天天天天天天天天天天天天天\n\n\n");
 
-        Sleep(5000);
+        //Sleep(3000);
     }
 
     closesocket(ClientSocket);
