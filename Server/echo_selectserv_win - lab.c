@@ -182,7 +182,7 @@ DWORD WINAPI KeyInputThread(LPVOID param) {
                         buf[0] = 2;
                         buf[1] = newX;
                         buf[1 + sizeof(int)] = newY;
-                        send(reads.fd_array[i], buf, 1 + sizeof(int) * 2, 0);
+                        send(reads.fd_array[i], buf, 2 + sizeof(int) * 2, 0);
                         printf("server> 드론 %d의 새로운 좌표 <%d, %d>를 전송했습니다.\n", con_port, newX, newY);
                         break;
                     }
@@ -203,8 +203,8 @@ DWORD WINAPI KeyInputThread(LPVOID param) {
                     buf[0] = 2;
                     buf[1] = i * 20;
                     buf[1 + sizeof(int)] = 100;
-                    send(reads.fd_array[i], buf, 1 + sizeof(int) * 2, 0);
-                    printf("server> 드론 %d의 정렬좌표 좌표 <%d, %d>를 전송했습니다.\n", ntohs(clientaddr.sin_port), buf[1], buf[2]);
+                    send(reads.fd_array[i], buf, 2 + sizeof(int) * 2, 0);
+                    printf("server> 드론 %d의 정렬좌표 좌표 <%d, %d>를 전송했습니다.\n", ntohs(clientaddr.sin_port), buf[1], buf[1 + sizeof(int)]);
                     Sleep(5000);
 
                 }
@@ -219,8 +219,8 @@ DWORD WINAPI KeyInputThread(LPVOID param) {
                     buf[0] = 2;
                     buf[1] = (i * 20) + 50;
                     buf[1 + sizeof(int)] = 100;
-                    send(reads.fd_array[i], buf, 1 + sizeof(int) * 2, 0);
-                    printf("드론 %d의 정렬후 이동좌표 좌표 <%d, %d>를 전송했습니다.\n", ntohs(clientaddr.sin_port), buf[1], buf[2]);
+                    send(reads.fd_array[i], buf, 2 + sizeof(int) * 2, 0);
+                    printf("드론 %d의 정렬후 이동좌표 좌표 <%d, %d>를 전송했습니다.\n", ntohs(clientaddr.sin_port), buf[1], buf[1 + sizeof(int)]);
                     Sleep(5000);
 
                 }

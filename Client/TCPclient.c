@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
         Buf[1 + 1 * sizeof(int)] = y;
         //Buf[1 + 2 * sizeof(int)] = 'r';
 
-        retval = recvn(ClientSocket, Buf, 1 + 2 * sizeof(int), 0, x, y);
+        retval = recvn(ClientSocket, Buf, 2 + 2 * sizeof(int), 0, x, y);
         if (retval == SOCKET_ERROR) {
             printf("<ERROR> recvn()(SOCKET_ERROR)!!!\n");
             break;
