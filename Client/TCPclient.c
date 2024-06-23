@@ -5,9 +5,6 @@
 #include <windows.h>
 
 #define BUF_SIZE 512
-#define A_LEN		2
-#define R_LEN		2
-#define M_LEN		3
 
 void ErrorDisplay(char* str)
 {
@@ -16,56 +13,14 @@ void ErrorDisplay(char* str)
 }
 
 // 사용자 정의 데이터 수신 함수
-int recvn(SOCKET s, char* buf, int len, int flags, int x, int y)
-{
-    int received;
-    char* ptr = buf;
-    int left = len;
+int recvn(SOCKET s, char* buf, int len, int flags, int x, int y);
+int  x, y;
 
-    while (left > 0)
-    {
-        fd_set readfds;
-        FD_ZERO(&readfds);
-        FD_SET(s, &readfds);
-
-        printf("[TCP 클라이언트] 현재 드론 좌표 전송 (%d, %d)\n", x, y);
-        int sent = send(s, buf, 2 * sizeof(int) + 3, 0);
-        Sleep(10000);
-
-        // select 함수를 사용하여 소켓의 상태를 모니터링
-        struct timeval timeout = { 0, 0 };
-        int retval = select(0, &readfds, NULL, NULL, &timeout);
-
-        if (retval == SOCKET_ERROR)
-        {
-            return SOCKET_ERROR;
-        }
-        else if (retval == 0)
-        {
-            // 타임아웃
-            continue;
-        }
-        else if (FD_ISSET(s, &readfds))
-        {
-            // 데이터가 도착했으므로 recv 함수 호출
-            received = recv(s, ptr, left, flags);
-            if (received == SOCKET_ERROR)
-                return SOCKET_ERROR;
-            else if (received == 0)
-                break;
-
-            left -= received;
-            ptr += received;
-        }
-    }
-
-    return (len - left);
-}
 
 int main(int argc, char* argv[])
 {
-    int retval, x, y, opening_x, opening_y;
-    int		rcvLen, targetLen;
+    int retval, opening_x, opening_y;
+    //int		rcvLen, targetLen;
     char	datacnt;
     WSADATA wsa;
     retval = WSAStartup(MAKEWORD(2, 2), &wsa);
@@ -104,34 +59,32 @@ int main(int argc, char* argv[])
     Buf[1] = x;
     Buf[1 + 1 * sizeof(int)] = y;
     // 마지막에 명령어 종류, 최초 초기화이므로 a
-    Buf[1 + 2 * sizeof(int)] = 'a';
+    //Buf[1 + 2 * sizeof(int)] = 'a';
 
-    retval = send(ClientSocket, Buf, 2 * sizeof(int) + 3, 0);
+    retval = send(ClientSocket, Buf, 2 * sizeof(int) + 1, 0);
     if (retval == SOCKET_ERROR) {
         printf("<ERROR> send(%s) falied.\n", Buf);
     }
 
     printf("[TCP 클라이언트] 성공적으로 메세지를 보냈습니다. (%d Bytes)\n", retval);
-    printf("보낸 메세지:\n");
-    printf("$\tcnt : %d\n", Buf[0]);
-    //printf("$\t현재 좌표 <%d, %d>\n", Buf[1], Buf[1 + 1 * sizeof(int)] = (char)y);
-    printf("$\tcommand : %c\n", Buf[1 + 2 * sizeof(int)]);
+    printf("▲▲▲▲▲[발송한 메세지 내용]▲▲▲▲▲\n");
+    printf("$cnt : \t\t%d\n", Buf[0]);
+    printf("$현재 좌표 : \t<% d, % d>\n", x, y);
+    //printf("$command :\t%c\n", Buf[1 + 2 * sizeof(int)]);
+    printf("▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲\n");
 
     while (1)
     { 
+        opening_x = x;
+        opening_y = y;
+
         ZeroMemory(Buf, sizeof(Buf));
         Buf[0] = (char)2;
         Buf[1] = x;
         Buf[1 + 1 * sizeof(int)] = y;
-        Buf[1 + 2 * sizeof(int)] = 'r';
+        //Buf[1 + 2 * sizeof(int)] = 'r';
 
-        retval = send(ClientSocket, Buf, 2 * sizeof(int) + 3, 0);
-        if (retval == SOCKET_ERROR) {
-            printf("<ERROR> send()(SOCKET_ERROR)!!!\n");
-            break;
-        }
-
-        retval = recvn(ClientSocket, Buf, 3, 0, x, y);
+        retval = recvn(ClientSocket, Buf, 1 + 2 * sizeof(int), 0, x, y);
         if (retval == SOCKET_ERROR) {
             printf("<ERROR> recvn()(SOCKET_ERROR)!!!\n");
             break;
@@ -139,23 +92,76 @@ int main(int argc, char* argv[])
         else if (retval == 0) break;
 
         x = Buf[1];
-        y = Buf[2];
+        y = Buf[1 + sizeof(int)];
 
         printf("[TCP 클라이언트] 서버로부터 새로운 좌표 수신: <%d, %d>\n", x, y);
         //Buf[retval]= '\0';
         datacnt = Buf[0];	// 맨앞 데이터 개수
         printf("[TCP 클라이언트] 서버로부터 %d 바이트를 받았습니다.\n", retval);
-        printf("ㅡㅡㅡㅡㅡ[수신한 메세지 내용]ㅡㅡㅡㅡㅡ\n");
-        printf("$\tcnt : %d\n", datacnt);
-        printf("$\t현재 좌표 <%d, %d>\n", opening_x, opening_y);
-        printf("$\t변경 좌표 <%d, %d>\n", x, y);
-        printf("$\tcommand : %c\n", Buf[1 + (int)datacnt * sizeof(int)]);
-        printf("ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ\n\n\n");
+        printf("■■■■■[수신한 메세지 내용]■■■■■\n");
+        printf("$cnt : \t\t%d\n", datacnt);
+        printf("$현재 좌표 : \t<%d, %d>\n", opening_x, opening_y);
+        printf("$수정 좌표 : \t<%d, %d>\n", x, y);
+        //printf("$command :\t%c\n", Buf[1 + (int)datacnt * sizeof(int)]);
+        printf("■■■■■■■■■■■■■■■■■■■■\n");
 
-        //Sleep(3000);
     }
 
     closesocket(ClientSocket);
     WSACleanup();
     return 0;
+}
+
+int recvn(SOCKET s, char* buf, int len, int flags, int x, int y) {
+    int received;
+    char* ptr = buf;
+    int left = len;
+
+    while (left > 0)
+    {
+        fd_set readfds;
+        FD_ZERO(&readfds);
+        FD_SET(s, &readfds);
+
+        printf("\n[TCP 클라이언트] 현재 드론 좌표를 전송합니다. (%d, %d)\n", x, y);
+        int sent = send(s, buf, 2 * sizeof(int) + 1, 0);
+        printf("[TCP 클라이언트] 성공적으로 메세지를 보냈습니다. (%d Bytes)\n", sent);
+        printf("▲▲▲▲▲[발송한 메세지 내용]▲▲▲▲▲\n");
+        printf("$cnt : \t\t%d\n", buf[0]);
+        printf("$현재 좌표 : \t<%d, %d>\n", x, y);
+        //printf("$command :\t%c\n", buf[1 + 2 * sizeof(int)]);
+        printf("▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲\n");
+        Sleep(5000);    // 반복 주기, 5초
+
+        // select 함수를 사용하여 소켓의 상태를 모니터링
+        struct timeval timeout = { 0, 0 };
+        int retval = select(0, &readfds, NULL, NULL, &timeout);
+
+        if (retval == SOCKET_ERROR)
+        {
+            return SOCKET_ERROR;
+        }
+        else if (retval == 0)
+        {
+            // 타임아웃
+            printf("\n[TCP 클라이언트]서버에서 보낸 메세지가 없습니다.\n");
+            Sleep(500);
+            continue;
+        }
+        else if (FD_ISSET(s, &readfds))
+        {
+            printf("[TCP 클라이언트] 서버로부터 메세지가 도착하였습니다.\n");
+            // 데이터가 도착했으므로 recv 함수 호출
+            received = recv(s, ptr, left, flags);
+            if (received == SOCKET_ERROR)
+                return SOCKET_ERROR;
+            else if (received == 0)
+                break;
+
+            left -= received;
+            ptr += received;
+        }
+    }
+
+    return (len - left);
 }
