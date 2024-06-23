@@ -59,9 +59,9 @@ int main(int argc, char* argv[])
     Buf[1] = x;
     Buf[1 + 1 * sizeof(int)] = y;
     // 마지막에 명령어 종류, 최초 초기화이므로 a
-    Buf[1 + 2 * sizeof(int)] = 'a';
+    //Buf[1 + 2 * sizeof(int)] = 'a';
 
-    retval = send(ClientSocket, Buf, 2 * sizeof(int) + 3, 0);
+    retval = send(ClientSocket, Buf, 2 * sizeof(int) + 1, 0);
     if (retval == SOCKET_ERROR) {
         printf("<ERROR> send(%s) falied.\n", Buf);
     }
@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
     printf("▲▲▲▲▲[발송한 메세지 내용]▲▲▲▲▲\n");
     printf("$cnt : \t\t%d\n", Buf[0]);
     printf("$현재 좌표 : \t<% d, % d>\n", x, y);
-    printf("$command :\t%c\n", Buf[1 + 2 * sizeof(int)]);
+    //printf("$command :\t%c\n", Buf[1 + 2 * sizeof(int)]);
     printf("▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲\n");
 
     while (1)
@@ -82,15 +82,9 @@ int main(int argc, char* argv[])
         Buf[0] = (char)2;
         Buf[1] = x;
         Buf[1 + 1 * sizeof(int)] = y;
-        Buf[1 + 2 * sizeof(int)] = 'r';
+        //Buf[1 + 2 * sizeof(int)] = 'r';
 
-        retval = send(ClientSocket, Buf, 2 * sizeof(int) + 3, 0);
-        if (retval == SOCKET_ERROR) {
-            printf("<ERROR> send()(SOCKET_ERROR)!!!\n");
-            break;
-        }
-
-        retval = recvn(ClientSocket, Buf, 3, 0, x, y);
+        retval = recvn(ClientSocket, Buf, 1 + 2 * sizeof(int), 0, x, y);
         if (retval == SOCKET_ERROR) {
             printf("<ERROR> recvn()(SOCKET_ERROR)!!!\n");
             break;
@@ -98,7 +92,7 @@ int main(int argc, char* argv[])
         else if (retval == 0) break;
 
         x = Buf[1];
-        y = Buf[2];
+        y = Buf[1 + sizeof(int)];
 
         printf("[TCP 클라이언트] 서버로부터 새로운 좌표 수신: <%d, %d>\n", x, y);
         //Buf[retval]= '\0';
@@ -106,9 +100,9 @@ int main(int argc, char* argv[])
         printf("[TCP 클라이언트] 서버로부터 %d 바이트를 받았습니다.\n", retval);
         printf("■■■■■[수신한 메세지 내용]■■■■■\n");
         printf("$cnt : \t\t%d\n", datacnt);
-        printf("$현재 좌표 : \t<% d, % d>\n", opening_x, opening_y);
-        printf("$수정 좌표 : \t<% d, % d>\n", x, y);
-        printf("$command :\t%c\n", Buf[1 + (int)datacnt * sizeof(int)]);
+        printf("$현재 좌표 : \t<%d, %d>\n", opening_x, opening_y);
+        printf("$수정 좌표 : \t<%d, %d>\n", x, y);
+        //printf("$command :\t%c\n", Buf[1 + (int)datacnt * sizeof(int)]);
         printf("■■■■■■■■■■■■■■■■■■■■\n");
 
     }
@@ -130,12 +124,12 @@ int recvn(SOCKET s, char* buf, int len, int flags, int x, int y) {
         FD_SET(s, &readfds);
 
         printf("\n[TCP 클라이언트] 현재 드론 좌표를 전송합니다. (%d, %d)\n", x, y);
-        int sent = send(s, buf, 2 * sizeof(int) + 3, 0);
+        int sent = send(s, buf, 2 * sizeof(int) + 1, 0);
         printf("[TCP 클라이언트] 성공적으로 메세지를 보냈습니다. (%d Bytes)\n", sent);
         printf("▲▲▲▲▲[발송한 메세지 내용]▲▲▲▲▲\n");
         printf("$cnt : \t\t%d\n", buf[0]);
-        printf("$현재 좌표 : \t<% d, % d>\n", x, y);
-        printf("$command :\t%c\n", buf[1 + 2 * sizeof(int)]);
+        printf("$현재 좌표 : \t<%d, %d>\n", x, y);
+        //printf("$command :\t%c\n", buf[1 + 2 * sizeof(int)]);
         printf("▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲\n");
         Sleep(5000);    // 반복 주기, 5초
 
@@ -151,7 +145,7 @@ int recvn(SOCKET s, char* buf, int len, int flags, int x, int y) {
         {
             // 타임아웃
             printf("\n[TCP 클라이언트]서버에서 보낸 메세지가 없습니다.\n");
-            Sleep(1000);
+            Sleep(500);
             continue;
         }
         else if (FD_ISSET(s, &readfds))

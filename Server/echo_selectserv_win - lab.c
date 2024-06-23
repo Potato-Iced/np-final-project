@@ -18,7 +18,7 @@ typedef struct pos {
 void ErrorHandling(char* message);
 
 void gotoxy(int x, int y);  // 커서 이동
-DWORD WINAPI KeyInputThread(LPVOID param); // 드론 조종 명령 스레드
+DWORD WINAPI KeyInputThread(LPVOID param); // 사용자의 키 입력을 감지하는 스레드
 void statusDraw();	// 현재 드론 위치정보 시각화
 void droneInit();	// 초기화
 
@@ -62,8 +62,8 @@ int main(void) {
     while (closenum == 1) {
         fd_set cpyReads = reads;
         TIMEVAL timeout;
-        timeout.tv_sec = 2;
-        timeout.tv_usec = 2000;
+        timeout.tv_sec = 1;
+        timeout.tv_usec = 1000;
 
         // GUI 갱신
         system("cls");
@@ -82,11 +82,14 @@ int main(void) {
         }
 
         fdNum = select(0, &cpyReads, 0, 0, &timeout);
+
+
         if (fdNum == SOCKET_ERROR) {
             closesocket(hServSock);
             break;
         }
         else if (fdNum == 0) {
+            Sleep(1000);
             continue;
         }
         for (i = 0; i < reads.fd_count; i++) {
@@ -131,8 +134,9 @@ int main(void) {
                         droneList[i].port = ntohs(clntAdr.sin_port);
                         printf("[드론 %d]\n", droneList[i].port);
                         printf("\t$cnt : \t\t%d\n", buf[0]);
-                        printf("\t$현재 좌표 : \t<% d, % d>\n", droneList[i].x, droneList[i].y);
-                        printf("\t$command :\t%c\n\n\n", buf[1 + 2 * sizeof(int)]);
+                        printf("\t$현재 좌표 : \t<%d, %d>\n", droneList[i].x, droneList[i].y);
+                        //printf("\t$command :\t%c\n", buf[1 + 2 * sizeof(int)]);
+                        Sleep(2000);
                     }
                 }
             }
@@ -155,7 +159,7 @@ void gotoxy(int x, int y) {
 
 DWORD WINAPI KeyInputThread(LPVOID param) {
     while (1) {
-        if (GetAsyncKeyState(0x4D) & 0x8000) {
+        if (GetAsyncKeyState(0x4D) & 0x8000) {  // M키가 눌렸음을 감지한 경우
             int con_port, newX, newY;
             printf("server> M키 입력 감지\n");
             printf("server> 포트 번호, x 좌표, y 좌표를 입력하세요: ");
@@ -165,7 +169,7 @@ DWORD WINAPI KeyInputThread(LPVOID param) {
             {
                 printf("server> 좌표값 범위 x좌표 0~200, y좌표 20~200\n");
                 printf("server> [ERROR] 좌표값 범위 벗어남, 명령 취소\n");
-                fflush(stdin);
+                fflush(stdin); // 버퍼 비우기
             }
 
             for (int i = 1; i < totalcount + 1; i++) {
@@ -177,8 +181,8 @@ DWORD WINAPI KeyInputThread(LPVOID param) {
                         unsigned char buf[BUF_SIZE] = { 0 };
                         buf[0] = 2;
                         buf[1] = newX;
-                        buf[2] = newY;
-                        send(reads.fd_array[i], buf, 3, 0);
+                        buf[1 + sizeof(int)] = newY;
+                        send(reads.fd_array[i], buf, 1 + sizeof(int) * 2, 0);
                         printf("server> 드론 %d의 새로운 좌표 <%d, %d>를 전송했습니다.\n", con_port, newX, newY);
                         break;
                     }
@@ -186,7 +190,7 @@ DWORD WINAPI KeyInputThread(LPVOID param) {
             }
         }
 
-        if (GetAsyncKeyState(0x51) & 0x8000) {
+        if (GetAsyncKeyState(0x51) & 0x8000) { // Q키가 눌렸음을 감지한 경우
             printf("Q키 입력 감지\n");
             printf("[드론 정렬 모드]\n");
 
@@ -198,8 +202,8 @@ DWORD WINAPI KeyInputThread(LPVOID param) {
                     unsigned char buf[BUF_SIZE] = { 0 };
                     buf[0] = 2;
                     buf[1] = i * 20;
-                    buf[2] = 100;
-                    send(reads.fd_array[i], buf, 3, 0);
+                    buf[1 + sizeof(int)] = 100;
+                    send(reads.fd_array[i], buf, 1 + sizeof(int) * 2, 0);
                     printf("server> 드론 %d의 정렬좌표 좌표 <%d, %d>를 전송했습니다.\n", ntohs(clientaddr.sin_port), buf[1], buf[2]);
                     Sleep(5000);
 
@@ -214,8 +218,8 @@ DWORD WINAPI KeyInputThread(LPVOID param) {
                     unsigned char buf[BUF_SIZE] = { 0 };
                     buf[0] = 2;
                     buf[1] = (i * 20) + 50;
-                    buf[2] = 100;
-                    send(reads.fd_array[i], buf, 3, 0);
+                    buf[1 + sizeof(int)] = 100;
+                    send(reads.fd_array[i], buf, 1 + sizeof(int) * 2, 0);
                     printf("드론 %d의 정렬후 이동좌표 좌표 <%d, %d>를 전송했습니다.\n", ntohs(clientaddr.sin_port), buf[1], buf[2]);
                     Sleep(5000);
 
@@ -260,7 +264,7 @@ void ErrorHandling(char* message) {
 void droneInit() {
     printf("\nㅡㅡㅡㅡㅡ TCP 네트워크 드론 통신 프로그램 ㅡㅡㅡㅡ\n\n");
     printf("server> 네트워크프로그래밍 팀프로젝트 - 2024학년도 1학기\n");
-    printf("server> 팀원1 : 2020152019 서동영 - 설계, GUI 구현, 데모 영상 제작\n");
+    printf("server> 팀원1 : 2020152019 서동영 - GUI 구현, 데모 영상 제작\n");
     printf("server> 팀원2 : 2019156012 박준표 - 멀티스레드 구현, 보고서 작성\n");
     Sleep(3000);
     for (int i = 0; i <= DRONE_AMOUNT; i++) {
